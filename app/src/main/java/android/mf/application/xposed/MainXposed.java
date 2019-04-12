@@ -20,7 +20,6 @@ public class MainXposed implements IXposedHookLoadPackage {
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            //param.setResult("iam new result! before");
                             param.args[0] = TAG;  //设置参数1
                             param.args[1] = "HookTest";  //设置参数2
                         }
