@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MFApplication</string>
+    <string name="action_settings">Settings</string>
+    <string name="logcat_name">运行日志</string>
+    <string name="Log_Up">顶部</string>
+    <string name="Log_Down">底部</string>
+    <string name="emptyLog">清除</string>
+</resources>

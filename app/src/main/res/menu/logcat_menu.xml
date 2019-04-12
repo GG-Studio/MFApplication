@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="android.mf.application.MainActivity">
+
+    <item android:id="@+id/Log_Up"
+          android:title="@string/Log_Up"
+          android:orderInCategory="100"
+          app:showAsAction="always"/>
+
+    <item android:id="@+id/Log_Down"
+          android:title="@string/Log_Down"
+          android:orderInCategory="100"
+          app:showAsAction="always"/>
+
+    <item android:id="@+id/emptyLog"
+          android:title="@string/emptyLog"
+          android:orderInCategory="100"
+          app:showAsAction="always"/>
+
+</menu>
