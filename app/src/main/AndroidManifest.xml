@@ -32,6 +32,9 @@
         <activity
                 android:label="@string/logcat_name"
                 android:name=".ui.LogcatUI"/>
+        <service
+                android:exported="true"
+                android:name=".service.AwakenService"/>
     </application>
 
 </manifest>
