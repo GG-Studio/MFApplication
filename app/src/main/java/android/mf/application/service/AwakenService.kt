@@ -51,6 +51,7 @@ class AwakenService : Service() {
                 }
                 "Xposed" -> {
                     onContext()
+                    onLogMsg(TAG, "HookTest")
                 }
                 "Destroy" -> Logcat.i(TAG, Content)
             }
@@ -70,7 +71,7 @@ class AwakenService : Service() {
 
     // 调用
     fun onContext(): Context {
-        onLogMsg(TAG, "HookTest")
+
         return getApplicationContext()
     }
 
