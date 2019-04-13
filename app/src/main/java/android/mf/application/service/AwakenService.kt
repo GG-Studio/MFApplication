@@ -53,7 +53,9 @@ class AwakenService : Service() {
                     onContext()
                     onLogMsg(TAG, "HookTest")
                 }
-                "Destroy" -> Logcat.i(TAG, Content)
+                "Destroy" -> {
+                    Logcat.i(TAG, Content)
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)

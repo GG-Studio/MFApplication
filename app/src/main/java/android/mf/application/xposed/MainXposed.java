@@ -13,6 +13,7 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class MainXposed implements IXposedHookLoadPackage {
@@ -25,16 +26,16 @@ public class MainXposed implements IXposedHookLoadPackage {
     private static String PfAwakenService = ".service.AwakenService";
     private static String PfXposedTaskService = ".service.XposedTaskService";
     private static DexClassLoader dexClassLoader = null;
+    private static Class AuxiliaryXposed = null;
+    private static Object AuxiliaryClass = null;
+    private static Method onCreate = null;
     private static File dexFile = null;
     private static String formDexPath = null;
     private static String loadDexPath = null;
-    private static double dexVersions = 1.0;
     private static ArrayList<Object> Task = null;
-    private static boolean isDv = false;
-    private static Object msg = 0.0;
 
     @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         XposedHelpers.findAndHookMethod(Application.class,
                 "attach",
                 Context.class,
@@ -74,11 +75,26 @@ public class MainXposed implements IXposedHookLoadPackage {
                             }
                             formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v" + Task.get(0) + ".jar";
                             loadDexPath = MoPfContext.getCacheDir().getAbsolutePath();
-                            File dexFile = new File(formDexPath);
+                            dexFile = new File(formDexPath);
                             if (!dexFile.exists()) {
                                 copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
                                 formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar";
                             }
+                            if (onCreate == null) {
+                                if (AuxiliaryClass == null) {
+                                    if (AuxiliaryXposed == null) {
+                                        if (dexClassLoader == null) {
+                                            dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, lpparam.classLoader);
+                                        }
+                                        AuxiliaryXposed = Class.forName(PfPackage + ".xposed.AuxiliaryXposed");
+                                    }
+                                    AuxiliaryClass = AuxiliaryXposed.newInstance();
+                                }
+                                onCreate = AuxiliaryXposed.getMethod("onCreate", Context.class);
+                                onCreate.invoke(AuxiliaryClass, MoPfContext);
+                            }
+                            Method onDexVersions = AuxiliaryXposed.getMethod("onTask", ArrayList.class);
+                            onDexVersions.invoke(AuxiliaryClass, Task);
                         }
                     });
             XposedHelpers.findAndHookMethod(PfPackage + PfXposedTaskService,
@@ -138,9 +154,10 @@ public class MainXposed implements IXposedHookLoadPackage {
         DexVersions = DexVersions.substring(5, DexVersions.length() - 4);
         double dexVersions = Double.parseDouble(DexVersions);
         if ((double) Task.get(0) > dexVersions) {
-           return false;
+            return false;
         } else return true;
     }
+
     private void copyFiles(Context context, String fileName, File desFile) {
         InputStream in = null;
         OutputStream out = null;
