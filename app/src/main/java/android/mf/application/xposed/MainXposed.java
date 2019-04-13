@@ -27,13 +27,14 @@ public class MainXposed implements IXposedHookLoadPackage {
     private static String PfAwakenService = ".service.AwakenService";
     private static String PfXposedTaskService = ".service.XposedTaskService";
     private static DexClassLoader dexClassLoader = null;
-    private static Class<?> AuxiliaryXposed = null;
-    private static Object AuxiliaryClass = null;
+    private static Class AuxiliaryXposedClass = null;
+    private static Object AuxiliaryXposed = null;
     private static Method onCreate = null;
-    private static Method onContext = null;
+    private static Method onHookLoadPackage = null;
     private static File dexFile = null;
     private static String formDexPath = null;
     private static String loadDexPath = null;
+    private static boolean isUninstallDex = false;
     private static ArrayList<Object> Task = null;
 
     @Override
@@ -84,37 +85,25 @@ public class MainXposed implements IXposedHookLoadPackage {
                                 }
                             }
                             if (dexClassLoader == null) {
-                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, lpparam.classLoader);
+                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null,  XC_LoadPackage.LoadPackageParam.class.getClassLoader());
+                            }
+                            if (AuxiliaryXposedClass == null) {
+                                AuxiliaryXposedClass = dexClassLoader.loadClass(PfPackage + ".xposed.AuxiliaryXposed");
                             }
                             if (AuxiliaryXposed == null) {
-                                AuxiliaryXposed = dexClassLoader.loadClass(PfPackage + ".xposed.AuxiliaryXposed");
+                                AuxiliaryXposed = AuxiliaryXposedClass.newInstance();
                             }
-                            if (AuxiliaryClass == null) {
-                                AuxiliaryClass = AuxiliaryXposed.newInstance();
+                            if (onCreate == null) {
+                                onCreate = AuxiliaryXposedClass.getMethod("onCreate",Context.class);
+                                onCreate.invoke(AuxiliaryXposed, MoPfContext);
                             }
-                            onCreate = AuxiliaryXposed.getMethod("onCreate", XC_LoadPackage.LoadPackageParam.class);
-                            onCreate.invoke(AuxiliaryClass, lpparam);
-                            Toast.makeText(MoPfContext,String.valueOf(123),Toast.LENGTH_LONG).show();
-                            /*if (onContext == null) {
-                                if (onCreate == null) {
-                                    if (AuxiliaryClass == null) {
-                                        if (AuxiliaryXposed == null) {
-                                            if (dexClassLoader == null) {
-                                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, lpparam.classLoader);
-                                            }
-                                            AuxiliaryXposed = Class.forName(PfPackage + ".xposed.AuxiliaryXposed");
-                                        }
-                                        AuxiliaryClass = AuxiliaryXposed.newInstance();
-                                    }
-                                    onCreate = AuxiliaryXposed.getMethod("onCreate", XC_LoadPackage.LoadPackageParam.class);
-                                    onCreate.invoke(AuxiliaryClass, lpparam);
-                                }
-                                onContext = AuxiliaryXposed.getMethod("onContext", Context.class);
-                                onContext.invoke(AuxiliaryClass, MoPfContext);
+                            if (onHookLoadPackage == null) {
+                                onHookLoadPackage = AuxiliaryXposedClass.getMethod("onHookLoadPackage", XC_LoadPackage.LoadPackageParam.class);
+                                onCreate.invoke(AuxiliaryXposed, lpparam);
                             }
-                            final Method onTask = AuxiliaryXposed.getMethod("onTask", ArrayList.class);
-                            onTask.invoke(AuxiliaryClass, Task);
-                            Toast.makeText(MoPfContext,String.valueOf(dexClassLoader),Toast.LENGTH_LONG).show();*/
+                            Method Task = AuxiliaryXposedClass.getMethod("onTask", ArrayList.class);
+                            Task.invoke(Task);
+
                         }
                     });
 
@@ -133,7 +122,8 @@ public class MainXposed implements IXposedHookLoadPackage {
         if (TextUtils.isEmpty(ServiceName))
             return false;
         ActivityManager myManager = (ActivityManager) initContext.getSystemService(Context.ACTIVITY_SERVICE);
-        ArrayList<ActivityManager.RunningServiceInfo> runningService = (ArrayList<ActivityManager.RunningServiceInfo>) myManager.getRunningServices(30);
+        ArrayList<ActivityManager.RunningServiceInfo> runningService = (ArrayList<ActivityManager.RunningServiceInfo>)
+                myManager.getRunningServices(30);
         for (int i = 0; i < runningService.size(); i++) {
             if (runningService.get(i).service.getClassName().equals(ServiceName)) {
                 return true;
