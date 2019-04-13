@@ -1,18 +1,18 @@
 package android.mf.application.service
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.mf.application.util.Logcat
 import android.os.IBinder
 import org.json.JSONArray
 import org.json.JSONException
- 
+import java.io.*
+
 class XposedTaskService: Service() {
     private val TAG = "XposedTaskService"
-
     private var Content: String? = null
     private val isContent = false
-
     private var OperateTotal: ArrayList<Any>? = null
     private var Task: ArrayList<Any>? = null
     private var DexVersions: Double = 1.0
@@ -92,6 +92,7 @@ class XposedTaskService: Service() {
         }
         return null
     }
+
 
     fun onLogMsg(tag: String, msg: Any) {
         Logcat.d(tag, msg)

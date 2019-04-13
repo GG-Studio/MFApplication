@@ -6,8 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
 import dalvik.system.DexClassLoader;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -32,6 +30,8 @@ public class MainXposed implements IXposedHookLoadPackage {
     private static String loadDexPath = null;
     private static double dexVersions = 1.0;
     private static ArrayList<Object> Task = null;
+    private static boolean isDv = false;
+    private static Object msg = 0.0;
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
@@ -62,8 +62,6 @@ public class MainXposed implements IXposedHookLoadPackage {
                             }
                         }
                     });
-            XposedLog(PfPackage + PfAwakenService, lpparam, initContext + "/-&&-/" + MoPfContext);
-
             XposedHelpers.findAndHookMethod(PfPackage + PfXposedTaskService,
                     lpparam.classLoader,
                     "onCreateTask",
@@ -73,6 +71,13 @@ public class MainXposed implements IXposedHookLoadPackage {
                             super.afterHookedMethod(param);
                             if (Task.size() <= 0) {
                                 Task = (ArrayList<Object>) param.getResult();
+                            }
+                            formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v" + Task.get(0) + ".jar";
+                            loadDexPath = MoPfContext.getCacheDir().getAbsolutePath();
+                            File dexFile = new File(formDexPath);
+                            if (!dexFile.exists()) {
+                                copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
+                                formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar";
                             }
                         }
                     });
@@ -85,9 +90,10 @@ public class MainXposed implements IXposedHookLoadPackage {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                             param.args[0] = TAG;
-                            param.args[1] =Task.size();
+                            param.args[1] = 0.0;
                         }
                     });
+
         }
     }
 
@@ -126,25 +132,33 @@ public class MainXposed implements IXposedHookLoadPackage {
                     }
                 });
     }
-    private void copyFiles(Context context, String fileName, File desFile){
-        InputStream in=null;
-        OutputStream out=null;
 
+    private boolean isDexVersions() {
+        String DexVersions = formDexPath.substring(formDexPath.indexOf("Dex_v"));
+        DexVersions = DexVersions.substring(5, DexVersions.length() - 4);
+        double dexVersions = Double.parseDouble(DexVersions);
+        if ((double) Task.get(0) > dexVersions) {
+           return false;
+        } else return true;
+    }
+    private void copyFiles(Context context, String fileName, File desFile) {
+        InputStream in = null;
+        OutputStream out = null;
         try {
-            in=context.getApplicationContext().getAssets().open(fileName);
-            out=new FileOutputStream(desFile.getAbsolutePath());
-            byte[] bytes=new byte[1024];
-            int len=0;
-            while ((len=in.read(bytes))!=-1)
-                out.write(bytes,0,len);
+            in = context.getAssets().open(fileName);
+            out = new FileOutputStream(desFile.getAbsolutePath());
+            byte[] bytes = new byte[1024];
+            int len = 0;
+            while ((len = in.read(bytes)) != -1)
+                out.write(bytes, 0, len);
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             try {
-                if (in!=null)
+                if (in != null)
                     in.close();
-                if (out!=null)
+                if (out != null)
                     out.close();
             } catch (IOException e) {
                 e.printStackTrace();
