@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
+import android.widget.Toast;
 import dalvik.system.DexClassLoader;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -26,9 +27,10 @@ public class MainXposed implements IXposedHookLoadPackage {
     private static String PfAwakenService = ".service.AwakenService";
     private static String PfXposedTaskService = ".service.XposedTaskService";
     private static DexClassLoader dexClassLoader = null;
-    private static Class AuxiliaryXposed = null;
+    private static Class<?> AuxiliaryXposed = null;
     private static Object AuxiliaryClass = null;
     private static Method onCreate = null;
+    private static Method onContext = null;
     private static File dexFile = null;
     private static String formDexPath = null;
     private static String loadDexPath = null;
@@ -70,43 +72,49 @@ public class MainXposed implements IXposedHookLoadPackage {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             super.afterHookedMethod(param);
-                            if (Task.size() <= 0) {
-                                Task = (ArrayList<Object>) param.getResult();
-                            }
-                            formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v" + Task.get(0) + ".jar";
+                            Task = (ArrayList<Object>) param.getResult();
+                            formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v" + Task.get(0).toString() + ".jar";
                             loadDexPath = MoPfContext.getCacheDir().getAbsolutePath();
                             dexFile = new File(formDexPath);
                             if (!dexFile.exists()) {
-                                copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
                                 formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar";
-                            }
-                            if (onCreate == null) {
-                                if (AuxiliaryClass == null) {
-                                    if (AuxiliaryXposed == null) {
-                                        if (dexClassLoader == null) {
-                                            dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, lpparam.classLoader);
-                                        }
-                                        AuxiliaryXposed = Class.forName(PfPackage + ".xposed.AuxiliaryXposed");
-                                    }
-                                    AuxiliaryClass = AuxiliaryXposed.newInstance();
+                                dexFile = new File(formDexPath);
+                                if (!dexFile.exists()) {
+                                    copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
                                 }
-                                onCreate = AuxiliaryXposed.getMethod("onCreate", Context.class);
-                                onCreate.invoke(AuxiliaryClass, MoPfContext);
                             }
-                            Method onDexVersions = AuxiliaryXposed.getMethod("onTask", ArrayList.class);
-                            onDexVersions.invoke(AuxiliaryClass, Task);
-                        }
-                    });
-            XposedHelpers.findAndHookMethod(PfPackage + PfXposedTaskService,
-                    lpparam.classLoader,
-                    "onLogMsg",
-                    String.class,
-                    Object.class,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            param.args[0] = TAG;
-                            param.args[1] = 0.0;
+                            if (dexClassLoader == null) {
+                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, lpparam.classLoader);
+                            }
+                            if (AuxiliaryXposed == null) {
+                                AuxiliaryXposed = dexClassLoader.loadClass(PfPackage + ".xposed.AuxiliaryXposed");
+                            }
+                            if (AuxiliaryClass == null) {
+                                AuxiliaryClass = AuxiliaryXposed.newInstance();
+                            }
+                            onCreate = AuxiliaryXposed.getMethod("onCreate", XC_LoadPackage.LoadPackageParam.class);
+                            onCreate.invoke(AuxiliaryClass, lpparam);
+                            Toast.makeText(MoPfContext,String.valueOf(123),Toast.LENGTH_LONG).show();
+                            /*if (onContext == null) {
+                                if (onCreate == null) {
+                                    if (AuxiliaryClass == null) {
+                                        if (AuxiliaryXposed == null) {
+                                            if (dexClassLoader == null) {
+                                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, lpparam.classLoader);
+                                            }
+                                            AuxiliaryXposed = Class.forName(PfPackage + ".xposed.AuxiliaryXposed");
+                                        }
+                                        AuxiliaryClass = AuxiliaryXposed.newInstance();
+                                    }
+                                    onCreate = AuxiliaryXposed.getMethod("onCreate", XC_LoadPackage.LoadPackageParam.class);
+                                    onCreate.invoke(AuxiliaryClass, lpparam);
+                                }
+                                onContext = AuxiliaryXposed.getMethod("onContext", Context.class);
+                                onContext.invoke(AuxiliaryClass, MoPfContext);
+                            }
+                            final Method onTask = AuxiliaryXposed.getMethod("onTask", ArrayList.class);
+                            onTask.invoke(AuxiliaryClass, Task);
+                            Toast.makeText(MoPfContext,String.valueOf(dexClassLoader),Toast.LENGTH_LONG).show();*/
                         }
                     });
 

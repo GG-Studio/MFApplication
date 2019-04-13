@@ -13,7 +13,6 @@ class XposedTaskService: Service() {
     private val TAG = "XposedTaskService"
     private var Content: String? = null
     private val isContent = false
-    private var OperateTotal: ArrayList<Any>? = null
     private var Task: ArrayList<Any>? = null
     private var DexVersions: Double = 1.0
     private var AppName: String? = null
@@ -24,7 +23,6 @@ class XposedTaskService: Service() {
 
     override fun onCreate() {
         super.onCreate()
-        OperateTotal = ArrayList()
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -50,7 +48,7 @@ class XposedTaskService: Service() {
     }
 
     fun onCreateTask(): ArrayList<Any>? {
-        return OperateTotal
+        return Task
     }
 
     private fun OperateTask(c: String?): ArrayList<Any>? {
@@ -85,8 +83,7 @@ class XposedTaskService: Service() {
                 Logcat.i(TAG,Step!!)
             }
             Task!!.add(Step!!)
-            OperateTotal!!.add(Task!!)
-            return OperateTotal
+            return Task
         } catch (e: JSONException) {
             e.printStackTrace()
         }
