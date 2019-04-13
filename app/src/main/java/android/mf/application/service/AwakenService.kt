@@ -69,10 +69,8 @@ class AwakenService : Service() {
         Logcat.i(TAG, "销毁")
     }
 
-    // 调用
     fun onContext(): Context {
-
-        return getApplicationContext()
+        return this
     }
 
     fun onLogMsg(tag: String, msg: Any) {

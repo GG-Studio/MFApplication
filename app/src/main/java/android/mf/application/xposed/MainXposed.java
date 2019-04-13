@@ -6,13 +6,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
 import dalvik.system.DexClassLoader;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 
 public class MainXposed implements IXposedHookLoadPackage {
@@ -48,7 +50,6 @@ public class MainXposed implements IXposedHookLoadPackage {
                     }
                 });
         if (lpparam.packageName.equals(PfPackage)) {
-
             XposedHelpers.findAndHookMethod(PfPackage + PfAwakenService,
                     lpparam.classLoader,
                     "onContext",
@@ -57,22 +58,12 @@ public class MainXposed implements IXposedHookLoadPackage {
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             super.afterHookedMethod(param);
                             if (MoPfContext == null) {
-                                MoPfContext = (Context) param.args[0];
+                                MoPfContext = (Context) param.getResult();
                             }
                         }
                     });
-            XposedHelpers.findAndHookMethod(PfPackage + PfAwakenService,
-                    lpparam.classLoader,
-                    "onLogMsg",
-                    String.class,
-                    Object.class,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            param.args[0] = TAG;
-                            param.args[1] = initContext + "/-&&-/" + MoPfContext;
-                        }
-                    });
+            XposedLog(PfPackage + PfAwakenService, lpparam, initContext + "/-&&-/" + MoPfContext);
+
             XposedHelpers.findAndHookMethod(PfPackage + PfXposedTaskService,
                     lpparam.classLoader,
                     "onCreateTask",
@@ -83,22 +74,23 @@ public class MainXposed implements IXposedHookLoadPackage {
                             if (Task.size() <= 0) {
                                 Task = (ArrayList<Object>) param.getResult();
                             }
-
+                        }
+                    });
+            XposedHelpers.findAndHookMethod(PfPackage + PfXposedTaskService,
+                    lpparam.classLoader,
+                    "onLogMsg",
+                    String.class,
+                    Object.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            param.args[0] = TAG;
+                            param.args[1] =Task.size();
                         }
                     });
         }
     }
-/*
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            //XposedBridge.log(TAG + "--->" + msg.obj);
 
-            super.handleMessage(msg);
-        }
-    };*/
-
-    //加载获取SuperLibrary应用
     private void AwakenParasitifer(Intent intentService) {
         ComponentName componentName = new ComponentName(PfPackage, PfPackage + PfAwakenService);
         intentService.setComponent(componentName);
@@ -107,11 +99,6 @@ public class MainXposed implements IXposedHookLoadPackage {
         initContext.startService(intentService);
     }
 
-    /**
-     * 判断服务是否开启
-     *
-     * @return
-     */
     private boolean isServiceRunning(String ServiceName) {
         if (TextUtils.isEmpty(ServiceName))
             return false;
@@ -123,5 +110,45 @@ public class MainXposed implements IXposedHookLoadPackage {
             }
         }
         return false;
+    }
+
+    private void XposedLog(String clazz, XC_LoadPackage.LoadPackageParam lpparam, final Object msg) {
+        XposedHelpers.findAndHookMethod(clazz,
+                lpparam.classLoader,
+                "onLogMsg",
+                String.class,
+                Object.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        param.args[0] = TAG;
+                        param.args[1] = msg;
+                    }
+                });
+    }
+    private void copyFiles(Context context, String fileName, File desFile){
+        InputStream in=null;
+        OutputStream out=null;
+
+        try {
+            in=context.getApplicationContext().getAssets().open(fileName);
+            out=new FileOutputStream(desFile.getAbsolutePath());
+            byte[] bytes=new byte[1024];
+            int len=0;
+            while ((len=in.read(bytes))!=-1)
+                out.write(bytes,0,len);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                if (in!=null)
+                    in.close();
+                if (out!=null)
+                    out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

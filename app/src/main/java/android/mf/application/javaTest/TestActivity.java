@@ -1,4 +1,4 @@
-package android.mf.application.test;
+package android.mf.application.javaTest;
 
 import android.content.Intent;
 import android.mf.application.ui.LogcatUI;
