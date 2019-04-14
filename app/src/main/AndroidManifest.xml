@@ -39,7 +39,7 @@
                 android:exported="false"
                 android:name=".service.XposedTaskService"/>
         <service
-                android:exported="true"
+                android:exported="false"
                 android:name=".service.HttpFileService"/>
     </application>
 

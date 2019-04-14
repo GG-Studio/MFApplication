@@ -29,7 +29,7 @@ import android.widget.Toast
 class MainActivity : AppCompatActivity() {
 
     private var TAG: String = "MainActivity"
-    private val FunctionNames = arrayOf("查看日志", "检测是否有Dex文件", "删除Dex文件", "唤醒服务", "任务服务", "重启手机","结束自身")
+    private val FunctionNames = arrayOf("查看日志", "复制文件到Data", "检测是否有Dex文件", "删除Dex文件", "唤醒服务", "任务服务", "重启手机", "结束自身")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -42,7 +42,21 @@ class MainActivity : AppCompatActivity() {
                     val intent = Intent(this@MainActivity, LogcatUI::class.java)
                     startActivity(intent)
                 }
+
                 1 -> {
+                    val appDir = File(Environment.getExternalStorageDirectory().toString() + "/MFAppDex_v1.0.jar")
+                    val file = File(getFilesDir().getAbsolutePath()+"/MFAppDex_v1.0.jar")
+                    Logcat.i(TAG, appDir.path)
+                    if (!appDir.exists()) {
+                        Logcat.e(TAG, "没有此文件")
+                    } else {
+                        var CMD = CommandManager(this)
+                        var cmd = ArrayList<String>()
+                        cmd.add("mv '"+appDir.path+"' '"+file.path+"'")
+                        CMD.executeCommand(cmd)
+                    }
+                }
+                2 -> {
                     var DexPath = getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar"
                     var file: File = File(DexPath)
                     if (!file.exists()) {
@@ -52,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                         Logcat.i(TAG, "文件存在！")
                     }
                 }
-                2 -> {
+                3 -> {
                     var DexPath = getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar"
                     var file: File = File(DexPath)
                     if (file.exists()) {
@@ -63,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                         Logcat.i(TAG, "文件不存在！")
                     }
                 }
-                3 -> {
+                4 -> {
                     val TestTask = "123"
                     val intentService = Intent(this@MainActivity, AwakenService::class.java)
                     intentService.putExtra("Key", "Xposed")
@@ -71,10 +85,11 @@ class MainActivity : AppCompatActivity() {
                     this@MainActivity.startService(intentService)
                     val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
                     val TestC = appDir.path
-                    Toast.makeText(this,TestC,Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, TestC, Toast.LENGTH_LONG).show()
                 }
-                4 -> {
-                    val TestA = "http://t-1.tuzhan.com/1604dbf01333/c-1/l/2012/09/20/19/eadbcc15d12d4100ac1de2fb787d4ae2.jpg"
+                5 -> {
+                    val TestA =
+                        "http://t-1.tuzhan.com/1604dbf01333/c-1/l/2012/09/20/19/eadbcc15d12d4100ac1de2fb787d4ae2.jpg"
                     val TestB = ""
                     val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
                     val TestC = appDir.path
@@ -82,28 +97,28 @@ class MainActivity : AppCompatActivity() {
                         appDir.mkdir()
                     }
                     val TestTask =
-                           "[{\"ScriptVersion\":1.0}," +
-                            "{\"AppName\":\"WeChat\",\"AppVersions\":7.3}," +
-                            "{\"FileArguments\":[{\"Url\":\""+TestA+"\",\"Name\":\"Chen\",\"SavePath\":\""+TestC+"\"}," +
-                                                "{\"Url\":\""+TestA+"\",\"Name\":\"Guo\",\"SavePath\":\""+TestC+"\"}," +
-                                                "{\"Url\":\""+TestA+"\",\"Name\":\"Gang\",\"SavePath\":\""+TestC+"\"}]}," +
-                            "{\"Operate\":1}]"
+                        "[{\"ScriptVersion\":1.0}," +
+                                "{\"AppName\":\"WeChat\",\"AppVersions\":7.3}," +
+                                "{\"FileArguments\":[{\"Url\":\"" + TestA + "\",\"Name\":\"Chen\",\"SavePath\":\"" + TestC + "\"}," +
+                                "{\"Url\":\"" + TestA + "\",\"Name\":\"Guo\",\"SavePath\":\"" + TestC + "\"}," +
+                                "{\"Url\":\"" + TestA + "\",\"Name\":\"Gang\",\"SavePath\":\"" + TestC + "\"}]}," +
+                                "{\"Operate\":1}]"
 
                     val intentService = Intent(this@MainActivity, XposedTaskService::class.java)
                     intentService.putExtra("Key", "Task")
                     intentService.putExtra("Content", TestTask)
                     this@MainActivity.startService(intentService)
                 }
-                5 -> {
+                6 -> {
                     var CMD = CommandManager(this)
                     var cmd = ArrayList<String>()
                     cmd.add("reboot")
                     CMD.executeCommand(cmd)
                 }
-                6 -> {
+                7 -> {
                     var CMD = CommandManager(this)
                     var cmd = ArrayList<String>()
-                    cmd.add("an force-stop "+ SyncStateContract.Constants.ACCOUNT_NAME)
+                    cmd.add("an force-stop " + SyncStateContract.Constants.ACCOUNT_NAME)
                     CMD.executeCommand(cmd)
                 }
             }
@@ -129,7 +144,6 @@ class MainActivity : AppCompatActivity() {
     private fun copyFiles(context: Context, fileName: String, desFile: File) {
         var ins: InputStream? = null
         var out: OutputStream? = null
-
         try {
             ins = context.getApplicationContext().getAssets().open(fileName)
             out = FileOutputStream(desFile.getAbsolutePath())
