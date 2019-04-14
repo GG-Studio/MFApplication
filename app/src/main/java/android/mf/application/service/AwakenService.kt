@@ -57,7 +57,8 @@ class AwakenService : Service() {
                     Logcat.i(TAG, Content)
                 }
                 "AppTask" -> {
-                    AppTask(Content)
+                    AppTask()
+                    Logcat.i(TAG, Content)
                 }
             }
         }
@@ -82,7 +83,7 @@ class AwakenService : Service() {
         Logcat.d(tag, msg)
     }
 
-    fun AppTask(result: String?):String ?{
-        return result
+    fun AppTask():String ?{
+        return Content
     }
 }

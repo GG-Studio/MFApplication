@@ -31,6 +31,7 @@ public class MainXposed implements IXposedHookLoadPackage {
     private static Class AuxiliaryXposedClass = null;
     private static Object AuxiliaryXposed = null;
     private static Method onCreate = null;
+    private static Method onInit = null;
     private static Method onHookLoadPackage = null;
     private static File dexFile = null;
     private static String formDexPath = null;
@@ -85,7 +86,6 @@ public class MainXposed implements IXposedHookLoadPackage {
                                     copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
                                 }
                             }
-                            Toast.makeText(MoPfContext, String.valueOf(dexClassLoader) + " --> onCreateTask", Toast.LENGTH_SHORT).show();
                             if (dexClassLoader == null) {
                                 dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, XC_LoadPackage.LoadPackageParam.class.getClassLoader());
                             }
@@ -98,6 +98,10 @@ public class MainXposed implements IXposedHookLoadPackage {
                             if (onCreate == null) {
                                 onCreate = AuxiliaryXposedClass.getMethod("onCreate", Context.class);
                                 onCreate.invoke(AuxiliaryXposed, MoPfContext);
+                            }
+                            if (onInit == null) {
+                                onInit = AuxiliaryXposedClass.getMethod("onInit", Context.class);
+                                onInit.invoke(AuxiliaryXposed, initContext);
                             }
                             if (onHookLoadPackage == null) {
                                 onHookLoadPackage = AuxiliaryXposedClass.getMethod("onHookLoadPackage", XC_LoadPackage.LoadPackageParam.class);

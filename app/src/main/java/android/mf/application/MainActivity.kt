@@ -8,6 +8,7 @@ import android.mf.application.ui.LogcatUI
 import android.mf.application.util.CommandManager
 import android.mf.application.util.Logcat
 import android.os.Bundle
+import android.provider.SyncStateContract
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
@@ -20,7 +21,7 @@ import java.util.ArrayList
 class MainActivity : AppCompatActivity() {
 
     private var TAG: String = "MainActivity"
-    private val FunctionNames = arrayOf("查看日志", "检测是否有Dex文件", "删除Dex文件", "唤醒服务", "任务服务", "重启手机")
+    private val FunctionNames = arrayOf("查看日志", "检测是否有Dex文件", "删除Dex文件", "唤醒服务", "任务服务", "重启手机","结束自身")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 4 -> {
                     val TestTask =
-                    "[{\"ScriptVersion\":1.0},{\"AppName\":\"WeChat\",\"AppVersions\":7.3},{\"FileArguments\":[{\"Url\":\"http://\",\"Name\":\"Chen\",\"SavePath\":\"Chen\"},{\"Url\":\"http://\",\"Name\":\"Guo\",\"SavePath\":\"Guo\"},{\"Url\":\"http://\",\"Name\":\"Gang\",\"SavePath\":\"Gang\"}]},{\"Operate\":2}]"
+                    "[{\"ScriptVersion\":1.0},{\"AppName\":\"WeChat\",\"AppVersions\":7.3},{\"FileArguments\":[{\"Url\":\"http://\",\"Name\":\"Chen\",\"SavePath\":\"Chen\"},{\"Url\":\"http://\",\"Name\":\"Guo\",\"SavePath\":\"Guo\"},{\"Url\":\"http://\",\"Name\":\"Gang\",\"SavePath\":\"Gang\"}]},{\"Operate\":1}]"
                     val intentService = Intent(this@MainActivity, XposedTaskService::class.java)
                     intentService.putExtra("Key", "Task")
                     intentService.putExtra("Content", TestTask)
@@ -73,6 +74,12 @@ class MainActivity : AppCompatActivity() {
                     var CMD = CommandManager(this)
                     var cmd = ArrayList<String>()
                     cmd.add("reboot")
+                    CMD.executeCommand(cmd)
+                }
+                6 -> {
+                    var CMD = CommandManager(this)
+                    var cmd = ArrayList<String>()
+                    cmd.add("an force-stop "+ SyncStateContract.Constants.ACCOUNT_NAME)
                     CMD.executeCommand(cmd)
                 }
             }
