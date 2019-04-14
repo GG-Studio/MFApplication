@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 4 -> {
                     val TestTask =
-                        "[{\"DexVersions\":\"1.1\"},{\"AppName\":\"WeChat\"},{\"FileUrl\":\"http://www.baidu.com\",\"FileName\":\"Chen\",\"FileSavePath\":\"/data/data/android.support.library/cache/\"},{\"TaskStep\":[{\"Step\":\"1\"},{\"Step\":\"2\"}]}]"
+                    "[{\"ScriptVersion\":1.0},{\"AppName\":\"WeChat\",\"AppVersions\":7.3},{\"FileArguments\":[{\"Url\":\"http://\",\"Name\":\"Chen\",\"SavePath\":\"Chen\"},{\"Url\":\"http://\",\"Name\":\"Guo\",\"SavePath\":\"Guo\"},{\"Url\":\"http://\",\"Name\":\"Gang\",\"SavePath\":\"Gang\"}]},{\"Operate\":2}]"
                     val intentService = Intent(this@MainActivity, XposedTaskService::class.java)
                     intentService.putExtra("Key", "Task")
                     intentService.putExtra("Content", TestTask)

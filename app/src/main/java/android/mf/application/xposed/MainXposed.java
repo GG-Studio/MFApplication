@@ -13,6 +13,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import javax.xml.validation.Validator;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -84,8 +85,9 @@ public class MainXposed implements IXposedHookLoadPackage {
                                     copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
                                 }
                             }
+                            Toast.makeText(MoPfContext, String.valueOf(dexClassLoader) + " --> onCreateTask", Toast.LENGTH_SHORT).show();
                             if (dexClassLoader == null) {
-                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null,  XC_LoadPackage.LoadPackageParam.class.getClassLoader());
+                                dexClassLoader = new DexClassLoader(formDexPath, loadDexPath, null, XC_LoadPackage.LoadPackageParam.class.getClassLoader());
                             }
                             if (AuxiliaryXposedClass == null) {
                                 AuxiliaryXposedClass = dexClassLoader.loadClass(PfPackage + ".xposed.AuxiliaryXposed");
@@ -94,16 +96,33 @@ public class MainXposed implements IXposedHookLoadPackage {
                                 AuxiliaryXposed = AuxiliaryXposedClass.newInstance();
                             }
                             if (onCreate == null) {
-                                onCreate = AuxiliaryXposedClass.getMethod("onCreate",Context.class);
+                                onCreate = AuxiliaryXposedClass.getMethod("onCreate", Context.class);
                                 onCreate.invoke(AuxiliaryXposed, MoPfContext);
                             }
                             if (onHookLoadPackage == null) {
                                 onHookLoadPackage = AuxiliaryXposedClass.getMethod("onHookLoadPackage", XC_LoadPackage.LoadPackageParam.class);
-                                onCreate.invoke(AuxiliaryXposed, lpparam);
+                                onHookLoadPackage.invoke(AuxiliaryXposed, lpparam);
                             }
-                            Method Task = AuxiliaryXposedClass.getMethod("onTask", ArrayList.class);
-                            Task.invoke(Task);
-
+                            Method onTask = AuxiliaryXposedClass.getMethod("onTask", ArrayList.class);
+                            onTask.invoke(AuxiliaryXposed, Task);
+                        }
+                    });
+            XposedHelpers.findAndHookMethod(PfPackage + PfAwakenService,
+                    lpparam.classLoader,
+                    "AppTask",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            super.afterHookedMethod(param);
+                            String result = (String) param.getResult();
+                            if (result.equals("1")) {
+                                dexClassLoader = null;
+                                AuxiliaryXposedClass = null;
+                                AuxiliaryXposed = null;
+                                onCreate = null;
+                                onHookLoadPackage = null;
+                            }
+                            Toast.makeText(MoPfContext, String.valueOf(dexClassLoader) + " --> AppTask", Toast.LENGTH_SHORT).show();
                         }
                     });
 

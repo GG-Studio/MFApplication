@@ -5,21 +5,16 @@ import android.content.Context
 import android.content.Intent
 import android.mf.application.util.Logcat
 import android.os.IBinder
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONException
 import java.io.*
 
-class XposedTaskService: Service() {
+class XposedTaskService : Service() {
+
     private val TAG = "XposedTaskService"
     private var Content: String? = null
-    private val isContent = false
     private var Task: ArrayList<Any>? = null
-    private var DexVersions: Double = 1.0
-    private var AppName: String? = null
-    private var FileUrl: String? = null
-    private var FileName: String? = null
-    private var FileSavePath: String? = null
-    private var Step: ArrayList<Any>? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -27,9 +22,9 @@ class XposedTaskService: Service() {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Content = intent.getStringExtra("Content")
-        if (OperateTask(Content)!!.size > 0) {
+        if (OperateTask(Content) > 0) {
             onCreateTask()
-            onLogMsg(TAG,"xposedHook")
+            onLogMsg(TAG, "xposedHook")
             this.stopSelf()
         }
         return super.onStartCommand(intent, flags, startId)
@@ -51,43 +46,29 @@ class XposedTaskService: Service() {
         return Task
     }
 
-    private fun OperateTask(c: String?): ArrayList<Any>? {
+    private fun OperateTask(c: String?):Int {
         Task = ArrayList()
-        Logcat.i(TAG,c)
         try {
-            var TaskStep = JSONArray(c)
-            val DexVersion = TaskStep!!.getJSONObject(0)
-            DexVersions = DexVersion.getDouble("DexVersions")
-            Task!!.add(DexVersions!!)
-            Logcat.i(TAG,DexVersions)
-            val TaskOne = TaskStep!!.getJSONObject(1)
-            AppName = TaskOne.getString("AppName")
-            Task!!.add(AppName!!)
-            Logcat.i(TAG,AppName)
-            val TaskTwo = TaskStep.getJSONObject(2)
-            FileUrl = TaskTwo.getString("FileUrl")
-            Task!!.add(FileUrl!!)
-            Logcat.i(TAG,FileUrl)
-            FileName = TaskTwo.getString("FileName")
-            Task!!.add(FileName!!)
-            Logcat.i(TAG,FileName)
-            FileSavePath = TaskTwo.getString("FileSavePath")
-            Task!!.add(FileSavePath!!)
-            Logcat.i(TAG,FileSavePath)
-            val TaskThree = TaskStep.getJSONObject(3)
-            TaskStep = JSONArray(TaskThree.getString("TaskStep"))
-            Step = ArrayList()
-            for (i in 0 until TaskStep.length()) {
-                val jsonObject = TaskStep.getJSONObject(i)
-                Step!!.add(jsonObject.getInt("Step"))
-                Logcat.i(TAG,Step!!)
+            var TaskJson = JSONArray(c)
+            Task!!.add(TaskJson!!.getJSONObject(0).getDouble("ScriptVersion"))
+            Task!!.add(TaskJson!!.getJSONObject(1).getString("AppName")) //操作APP
+            Task!!.add(TaskJson!!.getJSONObject(1).getDouble("AppVersions")) //APP版本
+            val File:ArrayList<Any> = ArrayList()
+            val ScriptFileArguments = JSONArray(TaskJson!!.getJSONObject(2).getString("FileArguments"))
+            for (i in 0 until ScriptFileArguments.length()) {
+                val Arguments:ArrayList<String> = ArrayList()
+                Arguments.add(ScriptFileArguments.getJSONObject(i).getString("Url"))
+                Arguments.add(ScriptFileArguments.getJSONObject(i).getString("Name"))
+                Arguments.add(ScriptFileArguments.getJSONObject(i).getString("SavePath"))
+                File!!.add(Arguments)
             }
-            Task!!.add(Step!!)
-            return Task
+            Task!!.add(File)
+            Task!!.add(TaskJson!!.getJSONObject(3).getInt("Operate")) //操作任务
+            return Task!!.size
         } catch (e: JSONException) {
-            e.printStackTrace()
+           Logcat.e(TAG,e.printStackTrace())
         }
-        return null
+        return 0
     }
 
 

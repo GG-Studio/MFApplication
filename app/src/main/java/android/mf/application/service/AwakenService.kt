@@ -56,6 +56,9 @@ class AwakenService : Service() {
                 "Destroy" -> {
                     Logcat.i(TAG, Content)
                 }
+                "AppTask" -> {
+                    AppTask(Content)
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -77,5 +80,9 @@ class AwakenService : Service() {
 
     fun onLogMsg(tag: String, msg: Any) {
         Logcat.d(tag, msg)
+    }
+
+    fun AppTask(result: String?):String ?{
+        return result
     }
 }
