@@ -17,6 +17,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.*
 import java.util.ArrayList
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Environment
+import android.system.Os.mkdir
+import java.nio.file.Files.exists
+import android.os.Environment.getExternalStorageDirectory
+import android.widget.Toast
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -61,10 +69,26 @@ class MainActivity : AppCompatActivity() {
                     intentService.putExtra("Key", "Xposed")
                     intentService.putExtra("Content", TestTask)
                     this@MainActivity.startService(intentService)
+                    val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
+                    val TestC = appDir.path
+                    Toast.makeText(this,TestC,Toast.LENGTH_LONG).show()
                 }
                 4 -> {
+                    val TestA = "http://t-1.tuzhan.com/1604dbf01333/c-1/l/2012/09/20/19/eadbcc15d12d4100ac1de2fb787d4ae2.jpg"
+                    val TestB = ""
+                    val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
+                    val TestC = appDir.path
+                    if (!appDir.exists()) {
+                        appDir.mkdir()
+                    }
                     val TestTask =
-                    "[{\"ScriptVersion\":1.0},{\"AppName\":\"WeChat\",\"AppVersions\":7.3},{\"FileArguments\":[{\"Url\":\"http://\",\"Name\":\"Chen\",\"SavePath\":\"Chen\"},{\"Url\":\"http://\",\"Name\":\"Guo\",\"SavePath\":\"Guo\"},{\"Url\":\"http://\",\"Name\":\"Gang\",\"SavePath\":\"Gang\"}]},{\"Operate\":1}]"
+                           "[{\"ScriptVersion\":1.0}," +
+                            "{\"AppName\":\"WeChat\",\"AppVersions\":7.3}," +
+                            "{\"FileArguments\":[{\"Url\":\""+TestA+"\",\"Name\":\"Chen\",\"SavePath\":\""+TestC+"\"}," +
+                                                "{\"Url\":\""+TestA+"\",\"Name\":\"Guo\",\"SavePath\":\""+TestC+"\"}," +
+                                                "{\"Url\":\""+TestA+"\",\"Name\":\"Gang\",\"SavePath\":\""+TestC+"\"}]}," +
+                            "{\"Operate\":1}]"
+
                     val intentService = Intent(this@MainActivity, XposedTaskService::class.java)
                     intentService.putExtra("Key", "Task")
                     intentService.putExtra("Content", TestTask)
@@ -128,7 +152,28 @@ class MainActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 Logcat.e(TAG, e.printStackTrace())
             }
-
         }
+    }
+
+    private fun saveImageToGallery(context: Context, bmp: Bitmap) {
+        val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
+        if (!appDir.exists()) {
+            appDir.mkdir()
+        }
+        val fileName = System.currentTimeMillis().toString() + ".png"
+        val file = File(appDir, fileName)
+        try {
+            val fos = FileOutputStream(file)
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, fos)
+            fos.flush()
+            fos.close()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        val path = file.getPath()
+        context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://$path")))
     }
 }

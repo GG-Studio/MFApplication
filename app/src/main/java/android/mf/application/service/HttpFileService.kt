@@ -43,7 +43,7 @@ class HttpFileService : Service() {
         Content = intent.getStringExtra("Content")
         when (Key) {
             "XposedDownload" -> {
-                val arguments = JSONObject(Content)
+                /*val arguments = JSONObject(Content)
                 val downloadManager = android.mf.application.util.DownloadManager(this)
                 downloadManager.setFileHttpUrl(arguments.getString("FileHttpUrl"))
                 downloadManager.setSavePath(arguments.getString("SavePath"))
@@ -55,7 +55,8 @@ class HttpFileService : Service() {
                 if (downloadFile.exists()) {
                     downloadFile.delete()
                 }
-                downloadManager.start()
+                downloadManager.start()*/
+                Logcat.i(TAG,Content)
             }
             "download" -> {
                 if (cmd != null) {
