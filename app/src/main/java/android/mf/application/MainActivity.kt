@@ -44,17 +44,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 1 -> {
-                    val appDir = File(Environment.getExternalStorageDirectory().toString() + "/MFAppDex_v1.0.jar")
-                    val file = File(getFilesDir().getAbsolutePath()+"/MFAppDex_v1.0.jar")
-                    Logcat.i(TAG, appDir.path)
-                    if (!appDir.exists()) {
-                        Logcat.e(TAG, "没有此文件")
-                    } else {
-                        var CMD = CommandManager(this)
-                        var cmd = ArrayList<String>()
-                        cmd.add("mv '"+appDir.path+"' '"+file.path+"'")
-                        CMD.executeCommand(cmd)
-                    }
+                    val appDir =
+                        File(Environment.getExternalStorageDirectory().toString() + "/MFAppDex_v1.0.jar").toString()
+                    val file = File(getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar").toString()
+                    var CMD = CommandManager(this)
+                    var cmd = ArrayList<String>()
+                    cmd.add("mv '" + appDir + "' '" + file + "'")
+                    Logcat.i(TAG, CMD.executeCommand(cmd))
                 }
                 2 -> {
                     var DexPath = getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar"

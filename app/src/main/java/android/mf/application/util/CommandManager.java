@@ -1,6 +1,7 @@
 package android.mf.application.util;
 
 import android.content.Context;
+import android.nfc.Tag;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -10,6 +11,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class CommandManager {
+    private String TAG = "CommandManager";
     private Context context = null;
     private ArrayList<String> cmd = null;
     public CommandManager(Context context) {
@@ -52,7 +54,7 @@ public class CommandManager {
             int value = process.waitFor();
             return returnResult(value);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logcat.Companion.e(TAG, e.getMessage());
         }finally{
             if(process!=null){
                 process.destroy();
@@ -100,7 +102,7 @@ public class CommandManager {
             } else
                 return false;
         } catch (Exception e) {
-            e.printStackTrace();
+            Logcat.Companion.e(TAG, e.getMessage());
             return false;
         } finally {
             try {
@@ -112,7 +114,7 @@ public class CommandManager {
                 }
                 process.destroy();
             } catch (Exception e) {
-                e.printStackTrace();
+                Logcat.Companion.e(TAG, e.getMessage());
             }
         }
     }
