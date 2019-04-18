@@ -1,0 +1,28 @@
+XposedHelpers.findAndHookMethod(Application.class, "attach",
+                    Context.class, new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            if (initContext == null) {
+                                initContext = (Context) param.args[0];
+                            }
+                            if(lpparam.packageName.equals("com.tencent.mm")) {
+                                ClassLoader cl = ((Context) param.args[0]).getClassLoader();
+                                Class<?> hookclass = null;
+                                try {
+                                    hookclass = cl.loadClass("com.tencent.mm.ui.LauncherUI");
+                                } catch (Exception e) {
+                                    Log.e("DEBUG", "load class error", e);
+                                    return;
+                                }
+                                Log.i("DEBUG", "load success");
+                                final Class<?> finalHookclass = hookclass;
+                                XposedHelpers.findAndHookMethod(hookclass, "onResume",
+                                        new XC_MethodHook(){
+                                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                                Toast.makeText(initContext, String.valueOf(finalHookclass.getName()), Toast.LENGTH_SHORT).show();
+
+                                            }
+                                        });
+                            }
+                        }
+                    });
