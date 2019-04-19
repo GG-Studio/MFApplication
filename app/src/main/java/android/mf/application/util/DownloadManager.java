@@ -2,7 +2,6 @@ package android.mf.application.util;
 
 
 import android.content.Context;
-import android.nfc.Tag;
 import android.os.Handler;
 import android.os.Message;
 
@@ -13,7 +12,7 @@ import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Objects;
+import java.util.ArrayList;
 
 public class DownloadManager extends Thread {
     private String TAG = "DownloadManager";
@@ -25,6 +24,7 @@ public class DownloadManager extends Thread {
     private int threadNumber = 3;
     private int gBlockSize = 0;
     private Handler MessageHandler = null;
+
     public DownloadManager(Context context) {
         this.context = context;
     }
@@ -47,22 +47,12 @@ public class DownloadManager extends Thread {
 
     public void setMessageHandler(Handler msg) {
         if (MessageHandler == null) {
-           this.MessageHandler = msg;
+            this.MessageHandler = msg;
         } else {
             if (MessageHandler != msg) {
                 this.MessageHandler = msg;
             }
         }
-    }
-
-    public void stopDownload() {
-
-    }
-    public void startDownload(String[] downloadArguments, int threadNumber) throws MalformedURLException {
-        this.downloadHttpUrl = new URL(downloadArguments[0]);
-        this.downloadSavePath = downloadArguments[1];
-        this.downloadFileNmae = downloadArguments[2];
-        this.threadNumber = threadNumber;
     }
 
     @Override
@@ -72,10 +62,7 @@ public class DownloadManager extends Thread {
             URLConnection conn = downloadHttpUrl.openConnection();
             int fileSize = conn.getContentLength();
             if (fileSize <= 0) {
-                Logcat.Companion.e(TAG, "读取文件失败！");
-                Message msg = new Message();
-                msg.arg1 = 0;
-                MessageHandler.sendMessage(msg);
+                System.out.println("读取文件失败");
                 return;
             }
             // 计算每条线程下载的数据长度
@@ -84,7 +71,7 @@ public class DownloadManager extends Thread {
             for (int i = 0; i < threadManagers.length; i++) {
                 // 启动线程，分别下载每个线程需要下载的部分
                 threadManagers[i] = new ThreadManagers(gBlockSize, (i + 1));
-                threadManagers[i].setName("MiUiDownloadManagers:" + i);
+                threadManagers[i].setName(TAG + ":" + i);
                 threadManagers[i].start();
             }
             boolean isfinished = false;
@@ -99,37 +86,30 @@ public class DownloadManager extends Thread {
                     }
                 }
                 float num = (float) downloadedAllSize / (float) fileSize;
-                Logcat.Companion.i(TAG, (int) (num * 100));
                 if ((int) (num * 100) == 100) {
-                    Logcat.Companion.i(TAG, "下载完成！");
-                    Message msg = new Message();
-                    msg.arg1 = 1;
-                    msg.obj = downloadFileNmae;
-                    MessageHandler.sendMessage(msg);
-                   /* CommandManager CMDmr =new CommandManager(context);
+                    /*CommandManager CMDmr =new CommandManager(context);
                     ArrayList<String> cmd = new ArrayList<>();
                     cmd.add("chmod 604 "+downloadSavePath+downloadFileNmae);
-                    CMDmr.executeCommand(cmd);
-                    Intent IntentgService = new Intent(context, FileService.class);
-                    IntentgService.putExtra("Key","operate");
-                    IntentgService.putExtra("Task",1);
-                    IntentgService.putExtra("Content","");
+                    CMDmr.executeCommand(cmd);*/
+                   /* Intent IntentgService = new Intent(context, MainService.class);
+                    IntentgService.putExtra("Key","FileMessage");
+                    IntentgService.putExtra("Content",file.getAbsolutePath());
                     context.startService(IntentgService);*/
                 }
                 Thread.sleep(1000);
             }
         } catch (MalformedURLException e) {
-            Logcat.Companion.e(TAG, e.getMessage());
+            e.printStackTrace();
         } catch (IOException e) {
-            Logcat.Companion.e(TAG, e.getMessage());
+            e.printStackTrace();
         } catch (InterruptedException e) {
-            Logcat.Companion.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private class ThreadManagers extends Thread {
 
-        private static final String TAG = "DThreadManagers";
+        private static final String TAG = "ThreadManagers";
         private boolean isCompleted = false;
         private int downloadLength = 0;
         private int threadId;
@@ -150,6 +130,8 @@ public class DownloadManager extends Thread {
                 int startPos = blockSize * (threadId - 1);
                 int endPos = blockSize * threadId - 1;
                 conn.setRequestProperty("Range", "bytes=" + startPos + "-" + endPos);
+                //System.out.println(Thread.currentThread().getName() + "  bytes=" + startPos + "-" + endPos);
+                //TestLog.Content(TAG,56,"测试");
                 byte[] buffer = new byte[1024];
                 bis = new BufferedInputStream(conn.getInputStream());
                 raf = new RandomAccessFile(new File(downloadSavePath + downloadFileNmae), "rwd");
@@ -161,20 +143,20 @@ public class DownloadManager extends Thread {
                 }
                 isCompleted = true;
             } catch (IOException e) {
-                Logcat.Companion.e(TAG, e.getMessage());
+                e.printStackTrace();
             } finally {
                 if (bis != null) {
                     try {
                         bis.close();
                     } catch (IOException e) {
-                        Logcat.Companion.e(TAG, e.getMessage());
+                        e.printStackTrace();
                     }
                 }
                 if (raf != null) {
                     try {
                         raf.close();
                     } catch (IOException e) {
-                        Logcat.Companion.e(TAG, e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             }
@@ -194,5 +176,4 @@ public class DownloadManager extends Thread {
             return downloadLength;
         }
     }
-
 }

@@ -15,6 +15,7 @@ import android.mf.application.util.Logcat
 import android.os.Handler
 import android.os.Message
 import java.io.File
+import java.lang.reflect.Field
 import java.net.MalformedURLException
 
 class HttpFileService : Service() {
@@ -43,11 +44,18 @@ class HttpFileService : Service() {
         Content = intent.getStringExtra("Content")
         when (Key) {
             "XposedDownload" -> {
-                /*val arguments = JSONObject(Content)
+                val arguments = JSONObject(Content)
                 val downloadManager = android.mf.application.util.DownloadManager(this)
                 downloadManager.setFileHttpUrl(arguments.getString("FileHttpUrl"))
+                Logcat.i(TAG,arguments.getString("FileHttpUrl"))
                 downloadManager.setSavePath(arguments.getString("SavePath"))
+                val SavePath = File(arguments.getString("SavePath"))
+                if (!SavePath.exists()) {
+                    SavePath.mkdir()
+                }
+                Logcat.i(TAG,arguments.getString("SavePath"))
                 XPFileNmae = arguments.getString("FileNmae")
+                Logcat.i(TAG,arguments.getString("FileNmae"))
                 downloadManager.setFileNmae(XPFileNmae)
                 downloadManager.setThreadNumber(3)
                 downloadManager.setMessageHandler(XposedHandler)
@@ -55,8 +63,8 @@ class HttpFileService : Service() {
                 if (downloadFile.exists()) {
                     downloadFile.delete()
                 }
-                downloadManager.start()*/
-                Logcat.i(TAG,Content)
+                downloadManager.start()
+
             }
             "download" -> {
                 if (cmd != null) {
@@ -91,6 +99,7 @@ class HttpFileService : Service() {
         }
         return super.onStartCommand(intent, flags, startId)
     }
+
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -138,12 +147,15 @@ class HttpFileService : Service() {
         override fun handleMessage(msg: Message) {
             when(msg.arg1) {
                 0->{
-                    XposedDownload("下载失败！")
+                    XposedDownload("文件下载失败！")
+                    Logcat.e(TAG,"文件下载失败！")
                 }
                 1->{
-                    XposedDownload(msg.obj.toString()+"下载完成！")
+                    XposedDownload(msg.obj.toString()+"文件下载完成！")
+                    Logcat.e(TAG,msg.obj.toString()+"文件下载完成！")
                 }
             }
+            //Logcat.i(TAG,msg.arg2)
             super.handleMessage(msg)
         }
     }

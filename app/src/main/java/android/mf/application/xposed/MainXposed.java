@@ -5,15 +5,15 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 import dalvik.system.DexClassLoader;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-
-import javax.xml.validation.Validator;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -41,6 +41,7 @@ public class MainXposed implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+
         XposedHelpers.findAndHookMethod(Application.class,
                 "attach",
                 Context.class,
@@ -55,6 +56,8 @@ public class MainXposed implements IXposedHookLoadPackage {
                         }
                     }
                 });
+
+        Toast.makeText(initContext,lpparam.packageName, Toast.LENGTH_SHORT).show();
         if (lpparam.packageName.equals(PfPackage)) {
             XposedHelpers.findAndHookMethod(PfPackage + PfAwakenService,
                     lpparam.classLoader,
@@ -126,7 +129,6 @@ public class MainXposed implements IXposedHookLoadPackage {
                                 onCreate = null;
                                 onHookLoadPackage = null;
                             }
-                            Toast.makeText(MoPfContext, String.valueOf(dexClassLoader) + " --> AppTask", Toast.LENGTH_SHORT).show();
                         }
                     });
 

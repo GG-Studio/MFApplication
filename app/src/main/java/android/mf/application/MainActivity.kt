@@ -20,16 +20,13 @@ import java.util.ArrayList
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
-import android.system.Os.mkdir
-import java.nio.file.Files.exists
-import android.os.Environment.getExternalStorageDirectory
 import android.widget.Toast
 
 
 class MainActivity : AppCompatActivity() {
 
     private var TAG: String = "MainActivity"
-    private val FunctionNames = arrayOf("查看日志", "复制文件到Data", "检测是否有Dex文件", "删除Dex文件", "唤醒服务", "任务服务", "重启手机", "结束自身")
+    private val FunctionNames = arrayOf("查看日志", "复制文件到Data", "检测是否有Dex文件", "删除Dex文件", "唤醒服务", "任务服务", "重启手机", "结束自身","打开朋友圈发送")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -48,19 +45,10 @@ class MainActivity : AppCompatActivity() {
                         File(Environment.getExternalStorageDirectory().toString() + "/MFAppDex_v1.0.jar").toString()
                     val file = File(getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar").toString()
                     var CMD = CommandManager(this)
-                    var cmd = ArrayList<String>()
-                    cmd.add("mv '" + appDir + "' '" + file + "'")
-                    Logcat.i(TAG, CMD.executeCommand(cmd))
+                    Logcat.i(TAG, CMD.moveFolderCMD(appDir,file))
                 }
                 2 -> {
-                    var DexPath = getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar"
-                    var file: File = File(DexPath)
-                    if (!file.exists()) {
-                        Logcat.i(TAG, "文件不存在！")
-                        copyFiles(this, "MFAppDex_v1.0.jar", file)
-                    } else {
-                        Logcat.i(TAG, "文件存在！")
-                    }
+
                 }
                 3 -> {
                     var DexPath = getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar"
@@ -79,19 +67,14 @@ class MainActivity : AppCompatActivity() {
                     intentService.putExtra("Key", "Xposed")
                     intentService.putExtra("Content", TestTask)
                     this@MainActivity.startService(intentService)
-                    val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
-                    val TestC = appDir.path
-                    Toast.makeText(this, TestC, Toast.LENGTH_LONG).show()
                 }
                 5 -> {
                     val TestA =
-                        "http://t-1.tuzhan.com/1604dbf01333/c-1/l/2012/09/20/19/eadbcc15d12d4100ac1de2fb787d4ae2.jpg"
+                        "https://development49.baidupan.com/2019041509bb/2019/04/15/ffcb188d6485b2800deee624aab77621.rar?st=nr9_1jIL-sUbJKtQGQpGnQ&q=Test.rar&e=1555294977&ip=118.113.132.126&fi=8081374&up=1."
                     val TestB = ""
                     val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
+                    Logcat.i(TAG,appDir)
                     val TestC = appDir.path
-                    if (!appDir.exists()) {
-                        appDir.mkdir()
-                    }
                     val TestTask =
                         "[{\"ScriptVersion\":1.0}," +
                                 "{\"AppName\":\"WeChat\",\"AppVersions\":7.3}," +
@@ -99,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                                 "{\"Url\":\"" + TestA + "\",\"Name\":\"Guo\",\"SavePath\":\"" + TestC + "\"}," +
                                 "{\"Url\":\"" + TestA + "\",\"Name\":\"Gang\",\"SavePath\":\"" + TestC + "\"}]}," +
                                 "{\"Operate\":1}]"
-
                     val intentService = Intent(this@MainActivity, XposedTaskService::class.java)
                     intentService.putExtra("Key", "Task")
                     intentService.putExtra("Content", TestTask)
@@ -115,7 +97,10 @@ class MainActivity : AppCompatActivity() {
                     var CMD = CommandManager(this)
                     var cmd = ArrayList<String>()
                     cmd.add("an force-stop " + SyncStateContract.Constants.ACCOUNT_NAME)
-                    CMD.executeCommand(cmd)
+                    Logcat.i(TAG, CMD.executeCommand(cmd))
+                }
+                8 -> {
+
                 }
             }
         }
@@ -137,36 +122,10 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun copyFiles(context: Context, fileName: String, desFile: File) {
-        var ins: InputStream? = null
-        var out: OutputStream? = null
-        try {
-            ins = context.getApplicationContext().getAssets().open(fileName)
-            out = FileOutputStream(desFile.getAbsolutePath())
-            val bytes = ByteArray(1024)
-            var len: Int = 0
-            while (ins.read(bytes) != -1) {
-                len = ins.read(bytes)
-                out!!.write(bytes, 0, len)
-                Logcat.i(TAG, "复制进度: " + len)
-            }
-            out!!.flush()
-        } catch (e: IOException) {
-            Logcat.e(TAG, e.printStackTrace())
-        } finally {
-            try {
-                if (ins != null)
-                    ins!!.close()
-                if (out != null)
-                    out!!.close()
-            } catch (e: IOException) {
-                Logcat.e(TAG, e.printStackTrace())
-            }
-        }
-    }
+
 
     private fun saveImageToGallery(context: Context, bmp: Bitmap) {
-        val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns")
+        val appDir = File(Environment.getExternalStorageDirectory(), "DCIM/WeChatSns/")
         if (!appDir.exists()) {
             appDir.mkdir()
         }
@@ -186,4 +145,5 @@ class MainActivity : AppCompatActivity() {
         val path = file.getPath()
         context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://$path")))
     }
+
 }

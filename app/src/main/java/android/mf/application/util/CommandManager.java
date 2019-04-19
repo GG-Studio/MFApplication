@@ -11,9 +11,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class CommandManager {
+
     private String TAG = "CommandManager";
     private Context context = null;
     private ArrayList<String> cmd = null;
+
     public CommandManager(Context context) {
         if(hasRootPerssion()) {
             this.context = context;
@@ -63,7 +65,7 @@ public class CommandManager {
         return false;
     }
 
-    private static boolean returnResult(int value){
+    private boolean returnResult(int value){
         // 代表成功
         if (value == 0) {
             return true;
@@ -72,6 +74,14 @@ public class CommandManager {
         } else { // 未知情况
             return false;
         }
+    }
+
+    public boolean moveFolderCMD(String old,String ne) {
+        if(context != null) {
+            cmd = new ArrayList<>();
+            cmd.add("mv '"+old+"' '"+ne+"'");
+            return executeCommand(cmd);
+        } else return false;
     }
 
     public boolean executeCommand(ArrayList<String> hashMap) {
