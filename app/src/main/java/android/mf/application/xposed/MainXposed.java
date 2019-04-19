@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.mf.application.util.SundryCodeManager;
 import android.nfc.Tag;
 import android.text.TextUtils;
 import android.util.Log;
@@ -51,13 +52,18 @@ public class MainXposed implements IXposedHookLoadPackage {
                         super.afterHookedMethod(param);
                         if (initContext == null) {
                             initContext = (Context) param.args[0];
-                        } else if (!isServiceRunning(PfPackage + PfAwakenService)) {
+                        } else if (!SundryCodeManager.isServiceRunning(initContext,PfPackage + PfAwakenService)) {
                             AwakenParasitifer(new Intent());
+                        }
+                        if(lpparam.packageName.equals(PfPackage)) {
+                            MoPf(lpparam);
                         }
                     }
                 });
 
-        Toast.makeText(initContext,lpparam.packageName, Toast.LENGTH_SHORT).show();
+    }
+
+    private void  MoPf(final XC_LoadPackage.LoadPackageParam lpparam) {
         if (lpparam.packageName.equals(PfPackage)) {
             XposedHelpers.findAndHookMethod(PfPackage + PfAwakenService,
                     lpparam.classLoader,
@@ -86,7 +92,7 @@ public class MainXposed implements IXposedHookLoadPackage {
                                 formDexPath = MoPfContext.getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar";
                                 dexFile = new File(formDexPath);
                                 if (!dexFile.exists()) {
-                                    copyFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
+                                    SundryCodeManager.copyAssetsFiles(MoPfContext, "MFAppDex_v1.0.jar", dexFile);
                                 }
                             }
                             if (dexClassLoader == null) {
@@ -134,7 +140,6 @@ public class MainXposed implements IXposedHookLoadPackage {
 
         }
     }
-
     private void AwakenParasitifer(Intent intentService) {
         ComponentName componentName = new ComponentName(PfPackage, PfPackage + PfAwakenService);
         intentService.setComponent(componentName);
@@ -142,6 +147,9 @@ public class MainXposed implements IXposedHookLoadPackage {
         intentService.putExtra("Content", initContext.getPackageCodePath());
         initContext.startService(intentService);
     }
+/*
+
+
 
     private boolean isServiceRunning(String ServiceName) {
         if (TextUtils.isEmpty(ServiceName))
@@ -157,6 +165,7 @@ public class MainXposed implements IXposedHookLoadPackage {
         return false;
     }
 
+*/
     private void XposedLog(String clazz, XC_LoadPackage.LoadPackageParam lpparam, final Object msg) {
         XposedHelpers.findAndHookMethod(clazz,
                 lpparam.classLoader,
@@ -180,7 +189,7 @@ public class MainXposed implements IXposedHookLoadPackage {
             return false;
         } else return true;
     }
-
+/*
     private void copyFiles(Context context, String fileName, File desFile) {
         InputStream in = null;
         OutputStream out = null;
@@ -204,5 +213,5 @@ public class MainXposed implements IXposedHookLoadPackage {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 }
