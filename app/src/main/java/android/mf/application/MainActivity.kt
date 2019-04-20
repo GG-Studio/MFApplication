@@ -41,11 +41,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 1 -> {
-                    val appDir =
-                        File(Environment.getExternalStorageDirectory().toString() + "/MFAppDex_v1.0.jar").toString()
-                    val file = File(getFilesDir().getAbsolutePath() + "/MFAppDex_v1.0.jar").toString()
-                    var CMD = CommandManager(this)
-                    Logcat.i(TAG, CMD.moveFolderCMD(appDir,file))
+
                 }
                 2 -> {
 

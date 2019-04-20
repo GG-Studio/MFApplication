@@ -32,11 +32,13 @@ class Logcat {
         }
 
         fun setHandler(handler: Handler?) {
-            if (MessageHandler == null) {
-                MessageHandler = handler
-            }
-            if (handler == null) {
-                MessageHandler = null
+            if (MessageHandler != handler) {
+                if (MessageHandler == null) {
+                    MessageHandler = handler
+                }
+                if (handler == null) {
+                    MessageHandler = null
+                }
             }
         }
 
